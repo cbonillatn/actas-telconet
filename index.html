@@ -659,7 +659,7 @@ function generarPDF(d){
   showToast(`Acta ${d.numero} generada ✓`,'success');
 }
 
-// ── GUARDAR EN SHEETS (via GET para evitar CORS) ──
+// ── GUARDAR EN SHEETS (via GET para evitar bloqueo CORS) ──
 async function guardarEnSheets(datos){
   if(!SHEETS_URL) return;
   const payload={
@@ -678,15 +678,9 @@ async function guardarEnSheets(datos){
     if(j.status==='ok'){
       showToast('Guardado en Google Sheets ✓','success');
     } else {
-      showToast('Error Sheets: '+j.message,'error-toast');
+      showToast('Error Sheets: '+(j.message||'desconocido'),'error-toast');
     }
   }catch(e){showToast('Error al guardar en Sheets: '+e.message,'error-toast');}
-} | ${a.desc} | x${a.cant} | ${a.series}`).join('\n'),
-    foto:datos.foto||null,fotoMime:datos.fotoMime||null,fotoNombre:datos.fotoNombre||null
-  };
-  try{
-    await fetch(SHEETS_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
-  }catch(e){showToast('Error al guardar en Sheets','error-toast');}
 }
 
 function setLoading(show,msg=''){
