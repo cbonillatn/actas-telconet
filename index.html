@@ -357,7 +357,7 @@ function onCedulaInput(input, statusId, nombreId){
   // Buscar nombre en base (con debounce)
   clearTimeout(cedulaDebounce[nombreId]);
   cedulaDebounce[nombreId] = setTimeout(async()=>{
-    if(!SHEETS_URL||SHEETS_URL==='https://script.google.com/macros/s/AKfycby11bqITglnwIurp4cFB6LdaShXoSpXcwrqMJ0zdWtGmzlaGmMPXvPDiXgBCfDT86RV/exec') return;
+    if(!SHEETS_URL) return;
     try{
       const r = await fetch(`${SHEETS_URL}?action=buscarCedula&cedula=${val}`);
       const j = await r.json();
