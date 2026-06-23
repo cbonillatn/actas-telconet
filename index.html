@@ -543,8 +543,47 @@ function formatFecha(f){
 }
 
 // ── GENERAR ACTA ──
+
+// ── VALIDAR SERIES DUPLICADAS (solo dentro de este acta) ──
+function validarSeriesDuplicadas() {
+  const todasLasSeries = [];
+  const series_por_articulo = {};
+  
+  document.querySelectorAll('.article-row').forEach((row, idx) => {
+    const id = row.id.replace('art-','');
+    const naCheck = document.getElementById(`na-ser-${id}`);
+    const seriesInputs = row.querySelectorAll(`#series-${id} input`);
+    const series_articulo = [];
+    
+    seriesInputs.forEach(inp => {
+      const val = inp.value.trim();
+      if(val && val !== 'N/A') {
+        series_articulo.push(val);
+        todasLasSeries.push(val);
+      }
+    });
+    
+    if(series_articulo.length > 0) {
+      series_por_articulo[id] = series_articulo;
+    }
+  });
+  
+  // Detectar duplicados
+  const duplicados = todasLasSeries.filter((item, index) => todasLasSeries.indexOf(item) !== index);
+  
+  if(duplicados.length > 0) {
+    const serie_dup = duplicados[0];
+    showToast(`⚠ Serie duplicada: "${serie_dup}" no se puede ingresar dos veces en la misma acta`, 'error-toast');
+    return false;
+  }
+  
+  return true;
+}
+
+
 async function generarActa(){
   if(!validarFormulario()){showToast('Corrija los campos marcados en rojo','error-toast');return;}
+  if(!validarSeriesDuplicadas()){return;}
   const datos={
     numero:getNumeroActa(),
     correo:document.getElementById('correo').value.trim(),
@@ -675,7 +714,7 @@ async function guardarEnSheets(datos){
     const url = `${SHEETS_URL}?action=guardarActa&payload=${encodeURIComponent(JSON.stringify(payload))}`;
     const r = await fetch(url);
     const j = await r.json();
-    if(j.status==='ok'){
+    if((j.status==='ok' || j.estado==='ok')){
       showToast('Guardado en Google Sheets ✓','success');
     } else {
       showToast('Error Sheets: '+(j.message||'desconocido'),'error-toast');
