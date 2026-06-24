@@ -711,9 +711,21 @@ async function guardarEnSheets(datos){
     foto:datos.foto||null,fotoMime:datos.fotoMime||null,fotoNombre:datos.fotoNombre||null
   };
   try{
-    const url = `${SHEETS_URL}?action=guardarActa&payload=${encodeURIComponent(JSON.stringify(payload))}`;
-    const r = await fetch(url);
-    const j = await r.json();
+    let r, j;
+    if(datos.foto){
+      // CON FOTO: usar POST (la URL con foto en base64 sería demasiado larga para GET)
+      r = await fetch(SHEETS_URL,{
+        method:'POST',
+        headers:{'Content-Type':'text/plain;charset=utf-8'},
+        body: JSON.stringify(payload)
+      });
+      j = await r.json();
+    } else {
+      // SIN FOTO: usar GET (más simple y confiable)
+      const url = `${SHEETS_URL}?action=guardarActa&payload=${encodeURIComponent(JSON.stringify(payload))}`;
+      r = await fetch(url);
+      j = await r.json();
+    }
     if((j.status==='ok' || j.estado==='ok')){
       showToast('Guardado en Google Sheets ✓','success');
     } else {
